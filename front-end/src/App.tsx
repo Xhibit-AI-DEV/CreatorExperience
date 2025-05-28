@@ -1,6 +1,8 @@
 import React from "react";
 import { createGlobalStyle } from "styled-components";
 import Navbar from "./components/Navbar";
+import Hero from "./components/Hero";
+import Login from "./components/pages/Login";
 import styled from "styled-components";
 
 const GlobalStyle = createGlobalStyle`
@@ -36,8 +38,8 @@ const App: React.FC = () => {
   return (
     <>
       <GlobalStyle />
-      <Navbar />
-      <TempContent>Welcome to Xhibit.ai</TempContent>
+      {/* <Navbar /> */}
+      <Login />
     </>
   );
 };

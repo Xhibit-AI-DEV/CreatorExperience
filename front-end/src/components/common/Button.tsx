@@ -7,10 +7,11 @@ const StyledButton = styled.button<ButtonProps>`
     props.size === "large" ? "1rem 2.5rem" : "0.8rem 2rem"};
   font-size: ${(props) => (props.size === "large" ? "1.2rem" : "1rem")};
   border: none;
-  border-radius: 4px;
+  border-radius: 3px;
   cursor: pointer;
   font-weight: 500;
   letter-spacing: 1px;
+  width: 350px;
   transition: all 0.3s ease;
   background: ${(props) =>
     props.variant === "secondary" ? "transparent" : "#000"};

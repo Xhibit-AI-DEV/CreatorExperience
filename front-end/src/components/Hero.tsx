@@ -37,9 +37,10 @@ const Title = styled.h1`
   font-weight: bold;
   margin-bottom: 1.5rem;
   letter-spacing: 2px;
+  color: #000;
 
   @media (max-width: 768px) {
-    font-size: 2.5rem;
+    font-size: 2rem;
   }
 `;
 
@@ -48,6 +49,7 @@ const Subtitle = styled.h2`
   margin-bottom: 2rem;
   font-weight: 400;
   letter-spacing: 1px;
+  color: #000;
 
   @media (max-width: 768px) {
     font-size: 1.2rem;
@@ -57,11 +59,10 @@ const Subtitle = styled.h2`
 const Hero: React.FC<SectionProps> = ({ className }) => {
   return (
     <HeroSection className={className}>
-      <HeroBackground />
       <HeroContent>
         <Title>IMMERSIVE STYLE DISCOVERY</Title>
-        <Subtitle>TRY ON GLOBAL DESIGNERS FROM ANYWHERE</Subtitle>
-        <Button size="large">TRY IN APP</Button>
+        <Subtitle>TRY ON INDEPENDENT LABELS AND BRANDS WITH YOUR DIGITAL TWIN</Subtitle>
+        <Button size="large">TRY IN APP </Button>
       </HeroContent>
     </HeroSection>
   );
