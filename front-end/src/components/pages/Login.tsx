@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import styled from 'styled-components';
 import Button from '../common/Button';
-import backgroundImage from '../images/background-static.png';
 
 const LoginContainer = styled.div`
   min-height: 100vh;
@@ -9,7 +8,8 @@ const LoginContainer = styled.div`
   flex-direction: column;
   align-items: center;
   color: #000;
-  font-family: 'Montserrat', sans-serif;
+  font-family: 'Helvetica Neue' helvetica;
+  position: relative;
 
   @media (min-width: 768px) {
     padding: 4rem;
@@ -22,7 +22,6 @@ const LoginForm = styled.form`
   max-width: 400px;
   margin: 0 auto;
   padding: 6rem;
-  background-image: url(${backgroundImage});
   background-size: cover;
   background-position: center;
   background-repeat: no-repeat;
@@ -33,10 +32,24 @@ const LoginForm = styled.form`
   flex-direction: column;
   align-items: center;
   justify-content: flex-end;
+  background-color: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(5px);
+  position: relative;
+  overflow: hidden;
 
   @media (min-width: 768px) {
     margin-bottom: 4rem;
   }
+`;
+
+const BackgroundVideo = styled.video`
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  z-index: -1;
 `;
 
 const Title = styled.h1`
@@ -58,7 +71,7 @@ const Input = styled.input`
   border-radius: 3px;
   font-size: 1rem;
   transition: border-color 0.2s;
-  background-color: rgba(255, 255, 255, 0.8);
+  background-color: rgba(255, 255, 255, 0.3);
 
   &:focus {
     outline: none;
@@ -66,6 +79,19 @@ const Input = styled.input`
   }
 `;
 
+const TermsLink = styled.a`
+  color: #333;
+  width: 350px;
+  text-decoration: none;
+  font-size: 0.9rem;
+  text-align: center;
+  margin-top: 2rem;
+  cursor: pointer;
+
+  &:hover {
+    text-decoration: underline;
+  }
+`;
 
 const Login: React.FC = () => {
   const [email, setEmail] = useState('');
@@ -79,10 +105,12 @@ const Login: React.FC = () => {
 
   return (
     <LoginContainer>
-      <div></div> {/* Empty div for spacing */}
-      
+      <div></div>
       <LoginForm onSubmit={handleSubmit}>
-      <Title>XHIBIT</Title>
+        <BackgroundVideo autoPlay muted loop playsInline>
+          <source src="/Background-animation.mp4" type="video/mp4" />
+        </BackgroundVideo>
+        <Title>XHIBIT</Title>
         <InputGroup>
           <Input
             id="email"
@@ -104,6 +132,7 @@ const Login: React.FC = () => {
           />
         </InputGroup>
         <Button type="submit">CONTINUE</Button>
+        <TermsLink href="#">AGREE TO TERMS AND CONDITIONS</TermsLink>
       </LoginForm>
     </LoginContainer>
   );
