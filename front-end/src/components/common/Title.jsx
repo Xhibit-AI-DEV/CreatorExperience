@@ -2,7 +2,7 @@ import React from "react";
 import styled from "styled-components";
 
 const StyledTitle = styled.h1`
-  font-size: 1.5rem;
+  font-size: 1.6rem;
   color: #000;
   margin: 0;
   margin-top: 1rem;
@@ -14,7 +14,7 @@ const StyledTitle = styled.h1`
   @media (min-width: 768px) {
     height: 33px;
   }
-`;   
+`;
 
 const BoldText = styled.span`
   font-weight: 500;
@@ -28,7 +28,7 @@ const RegularText = styled.span`
 `;
 
 const Title = ({ children }) => {
-  const parts = children.split('||');
+  const parts = children.split("||");
   return (
     <StyledTitle>
       <BoldText>{parts[0].trim()}</BoldText>
@@ -37,4 +37,4 @@ const Title = ({ children }) => {
   );
 };
 
-export default Title; 
+export default Title;

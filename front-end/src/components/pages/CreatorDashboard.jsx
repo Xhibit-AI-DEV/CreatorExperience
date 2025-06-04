@@ -8,6 +8,7 @@ import { API_BASE_URL, API_ENDPOINTS } from "../../config/api";
 
 const DashboardForm = styled.form`
   max-width: 400px;
+  height: 700px;
   margin: 0 auto;
   padding-left: 3rem;
   padding-right: 3rem;
@@ -68,15 +69,28 @@ const ConversionExplanation = styled.p`
   margin: 0.3rem 0 0 1rem;
 `;
 const WalletBalance = styled.p`
-  font-size: 0.8rem;
-  font-weight: 600;
+  font-size: 1.8rem;
+  font-weight: 400;
   background-color: #fff;
-  border: 1px solid rgba(30, 23, 9, 1);
+  padding: 1rem;
+  border-radius: 10px;
+  margin: 0.6rem 0 0 1rem;
+  color: rgba(30, 23, 9, 0.4);
 `;
 
 const XhibitLogo = styled.img`
-  width: 100px;
-  height: 100px;
+  width: 150px;
+  height: 150px;
+`;
+
+const LookBooksTitle = styled.h1`
+  font-size: 1.4rem;
+  font-weight: 400;
+  margin: 2rem 0 0 0;
+  font-family: "Helvetica Neue", helvetica;
+  color: rgba(30, 23, 9, 1);
+  letter-spacing: 0.2rem;
+  align-self: center;
 `;
 
 const CreatorDashboard = () => {
@@ -90,10 +104,11 @@ const CreatorDashboard = () => {
         <WalletDisplayContainer>
           <WalletInfoTitle>WALLET</WalletInfoTitle>
           <ConversionExplanation>10 XBT = 10 CENTS</ConversionExplanation>
-          {/*         <WalletBalance>Balance: 0.000000000000000000</WalletBalance>
-           */}{" "}
+          <ConversionExplanation>CURRENT BALANCE </ConversionExplanation>
+          <WalletBalance>0.00 USD</WalletBalance>
         </WalletDisplayContainer>
       </WalletInfo>
+      <LookBooksTitle>LOOKBOOKS</LookBooksTitle>
     </DashboardForm>
   );
 };
