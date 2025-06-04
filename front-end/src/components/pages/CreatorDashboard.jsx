@@ -93,6 +93,20 @@ const LookBooksTitle = styled.h1`
   align-self: center;
 `;
 
+const LookBookContainer = styled.div`
+  display: flex;
+  flex-direction: column;
+  align-items: column;
+  justify-content: center;
+  background-color: rgba(255, 254, 253, 0.88);
+  width: 100%;
+  border-radius: 6px;
+  padding: 1.6rem;
+  margin-top: 1.7rem;
+  font-family: "Helvetica Neue", helvetica;
+  color: rgba(30, 23, 9, 1);
+`;
+
 const CreatorDashboard = () => {
   return (
     <DashboardForm>
@@ -109,6 +123,7 @@ const CreatorDashboard = () => {
         </WalletDisplayContainer>
       </WalletInfo>
       <LookBooksTitle>LOOKBOOKS</LookBooksTitle>
+      <LookBookContainer></LookBookContainer>
     </DashboardForm>
   );
 };
