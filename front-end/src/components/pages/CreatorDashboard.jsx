@@ -83,6 +83,28 @@ const XhibitLogo = styled.img`
   height: 150px;
 `;
 
+const PayoutButton = styled.button`
+padding: ${props => props.size === "large" ? "1rem 2.5rem" : "0.8rem 2rem"};
+  font-size: ${props => props.size === "large" ? "0.9rem" : "0.7rem"};
+  border: none;
+  border-radius: 3px;
+  margin-left: 5rem;
+  margin-top: 1rem;
+  cursor: pointer;
+  font-weight: 400;
+  width: 175px;
+  height: 35px;
+  transition: all 0.3s ease;
+  background: ${props => props.variant === "secondary" ? "transparent" : "#000"};
+  color: ${props => props.variant === "secondary" ? "#000" : "#fff"};
+  border: ${props => props.variant === "secondary" ? "2px solid #000" : "none"};
+
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  }
+`;
+
 const LookBooksTitle = styled.h1`
   font-size: 1.4rem;
   font-weight: 400;
@@ -120,6 +142,7 @@ const CreatorDashboard = () => {
           <ConversionExplanation>10 XBT = 10 CENTS</ConversionExplanation>
           <ConversionExplanation>CURRENT BALANCE </ConversionExplanation>
           <WalletBalance>0.00 USD</WalletBalance>
+          <PayoutButton>REQUEST PAYOUT</PayoutButton>
         </WalletDisplayContainer>
       </WalletInfo>
       <LookBooksTitle>LOOKBOOKS</LookBooksTitle>
