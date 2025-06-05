@@ -164,7 +164,7 @@ const Login = () => {
     setIsChecked((prev) => !prev);
   };
 
-  const handleSubmit = async (e) => {
+  const handleLogin = async (e) => {
     e.preventDefault();
     if (!isChecked) {
       setShowAlert(true);
@@ -176,53 +176,35 @@ const Login = () => {
     setError(null);
 
     try {
-      // First try to login
-      try {
-        const response = await axios.post(`${API_BASE_URL}${API_ENDPOINTS.LOGIN}`, {
-          email,
-          password
-        });
-        
-        // Store the token and user data
-        localStorage.setItem('token', response.data.token);
-        localStorage.setItem('user', JSON.stringify(response.data.data));
+      // Check if user exists and get their wallet
+      const response = await axios.get(`${API_BASE_URL}${API_ENDPOINTS.AUTH.GET_PUBLIC_KEY}`, {
+        params: { email }
+      });
+      
+      if (response.data.wallet_address) {
+        // Store the wallet address and email
+        localStorage.setItem('walletAddress', response.data.wallet_address);
+        localStorage.setItem('userEmail', email);
         
         console.log("User logged in successfully");
-        navigate('/upload');
-      } catch (loginError) {
-        // If login fails with "user not found", try to register
-        if (loginError.response?.status === 404) {
-          try {
-            const registerResponse = await axios.post(`${API_BASE_URL}${API_ENDPOINTS.REGISTER}`, {
-              email,
-              password
-            });
-            
-            // Store the token and user data
-            localStorage.setItem('token', registerResponse.data.token);
-            localStorage.setItem('user', JSON.stringify(registerResponse.data.data));
-            
-            console.log("New user registered successfully");
-            navigate('/upload');
-          } catch (registerError) {
-            console.error("Registration error:", registerError);
-            setError(registerError.response?.data?.message || "Registration failed");
-          }
-        } else {
-          console.error("Login error:", loginError);
-          setError(loginError.response?.data?.message || "Login failed");
-        }
+        navigate('/creator');
+      } else {
+        setError("Login failed. Please try again.");
       }
     } catch (error) {
-      console.error("Authentication error:", error);
-      setError(error.response?.data?.message || "An error occurred");
+      console.error("Login error:", error);
+      if (error.response?.status === 404) {
+        setError("User not found. Please sign up first.");
+      } else {
+        setError("An error occurred. Please try again.");
+      }
     } finally {
       setIsLoading(false);
     }
   };
 
   return (
-    <LoginForm onSubmit={handleSubmit}>
+    <LoginForm onSubmit={handleLogin}>
       {showAlert && (
         <AlertMessage>Please accept the terms and conditions</AlertMessage>
       )}
