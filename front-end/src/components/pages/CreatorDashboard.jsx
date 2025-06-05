@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import styled from "styled-components";
 import Button from "../common/Button";
 import { useNavigate } from "react-router-dom";
@@ -14,14 +14,14 @@ const DashboardForm = styled.form`
   padding-right: 3rem;
   padding-top: 1rem;
   padding-bottom: 6rem;
-  border-radius: 20px;
+  border-radius: 2px;
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
   margin-bottom: 0 auto;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: flex-start;
-  background: #e2dedc;
+  background: linear-gradient(to bottom, #e2dedc,rgba(9, 3, 0, 0.41));
   backdrop-filter: blur(5px);
   position: relative;
   overflow: visible;
@@ -71,16 +71,58 @@ const ConversionExplanation = styled.p`
 const WalletBalance = styled.p`
   font-size: 1.8rem;
   font-weight: 400;
+  width: 170px;
   background-color: #fff;
   padding: 1rem;
   border-radius: 10px;
   margin: 0.6rem 0 0 1rem;
   color: rgba(30, 23, 9, 0.4);
+
+  @media (max-width: 768px) {
+    font-size: 1.4rem;
+    width: 140px;
+    padding: 0.8rem;
+  }
 `;
 
 const XhibitLogo = styled.img`
   width: 150px;
   height: 150px;
+
+  @media (max-width: 768px) {
+    width: 120px;
+    height: 120px;
+  }
+`;
+
+const PayoutButton = styled.button`
+  padding: ${props => props.size === "large" ? "1rem 2.5rem" : "0.8rem 1.5rem"};
+  font-size: ${props => props.size === "large" ? "0.9rem" : "0.7rem"};
+  border: none;
+  border-radius: 3px;
+  margin-top: 1rem;
+  margin-left: 1rem;
+  cursor: pointer;
+  font-weight: 400;
+  width: 200px;
+  height: 35px;
+  transition: all 0.3s ease;
+  background: ${props => props.variant === "secondary" ? "transparent" : "#000"};
+  color: ${props => props.variant === "secondary" ? "#000" : "#fff"};
+  border: ${props => props.variant === "secondary" ? "2px solid #000" : "none"};
+
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  }
+
+  @media (max-width: 768px) {
+    width: 200px;
+    height: 35px;
+    margin-left: 1rem;
+    font-size: 0.7rem;
+    padding: 0.6rem 1.2rem;
+  }
 `;
 
 const LookBooksTitle = styled.h1`
@@ -108,6 +150,40 @@ const LookBookContainer = styled.div`
 `;
 
 const CreatorDashboard = () => {
+  const [balance, setBalance] = useState("0.00");
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    const fetchBalance = async () => {
+      const walletAddress = localStorage.getItem("walletAddress");
+      if (!walletAddress) {
+        navigate("/login");
+        return;
+      }
+
+      try {
+        const response = await axios.get(`${API_BASE_URL}${API_ENDPOINTS.AUTH.GET_BALANCE}`, {
+          params: { publicKey: walletAddress }
+        });
+        setBalance(response.data.balance || "0.00");
+      } catch (error) {
+        console.error("Error fetching balance:", error);
+        setError("Failed to fetch balance");
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchBalance();
+  }, [navigate]);
+
+  const handlePayout = async () => {
+    // TODO: Implement payout functionality
+    console.log("Payout requested");
+  };
+
   return (
     <DashboardForm>
       <TitleContainer>
@@ -119,7 +195,8 @@ const CreatorDashboard = () => {
           <WalletInfoTitle>WALLET</WalletInfoTitle>
           <ConversionExplanation>10 XBT = 10 CENTS</ConversionExplanation>
           <ConversionExplanation>CURRENT BALANCE </ConversionExplanation>
-          <WalletBalance>0.00 USD</WalletBalance>
+          <WalletBalance>{isLoading ? "Loading..." : `${balance} USD`}</WalletBalance>
+          <PayoutButton onClick={handlePayout}>REQUEST PAYOUT</PayoutButton>
         </WalletDisplayContainer>
       </WalletInfo>
       <LookBooksTitle>LOOKBOOKS</LookBooksTitle>
