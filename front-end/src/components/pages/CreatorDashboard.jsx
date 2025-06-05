@@ -71,25 +71,37 @@ const ConversionExplanation = styled.p`
 const WalletBalance = styled.p`
   font-size: 1.8rem;
   font-weight: 400;
+  width: 170px;
   background-color: #fff;
   padding: 1rem;
   border-radius: 10px;
   margin: 0.6rem 0 0 1rem;
   color: rgba(30, 23, 9, 0.4);
+
+  @media (max-width: 768px) {
+    font-size: 1.4rem;
+    width: 140px;
+    padding: 0.8rem;
+  }
 `;
 
 const XhibitLogo = styled.img`
   width: 150px;
   height: 150px;
+
+  @media (max-width: 768px) {
+    width: 120px;
+    height: 120px;
+  }
 `;
 
 const PayoutButton = styled.button`
-padding: ${props => props.size === "large" ? "1rem 2.5rem" : "0.8rem 2rem"};
+  padding: ${props => props.size === "large" ? "1rem 2.5rem" : "0.8rem 1.5rem"};
   font-size: ${props => props.size === "large" ? "0.9rem" : "0.7rem"};
   border: none;
   border-radius: 3px;
-  margin-left: 5rem;
   margin-top: 1rem;
+  margin-left: 5rem;
   cursor: pointer;
   font-weight: 400;
   width: 175px;
@@ -102,6 +114,14 @@ padding: ${props => props.size === "large" ? "1rem 2.5rem" : "0.8rem 2rem"};
   &:hover {
     transform: translateY(-2px);
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  }
+
+  @media (max-width: 768px) {
+    width: 140px;
+    height: 30px;
+    margin-left: 8.5rem;
+    font-size: 0.7rem;
+    padding: 0.6rem 1.2rem;
   }
 `;
 
