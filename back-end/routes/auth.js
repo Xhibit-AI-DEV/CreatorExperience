@@ -1,7 +1,13 @@
 const express = require("express");
-const router = express();
+const router = express.Router();
 const { createTestAccount } = require("../services/stellarService");
 const db = require("../db");
+
+// Add route logging middleware
+router.use((req, res, next) => {
+  console.log(`Auth route accessed: ${req.method} ${req.path}`);
+  next();
+});
 
 router.post("/", async (req, res) => {
   try {
@@ -23,18 +29,27 @@ router.post("/", async (req, res) => {
 });
 
 router.get('/public-key', async (req, res) => {
+  console.log('Public key route accessed with query:', req.query);
   const { email } = req.query;
   if (!email) {
+    console.log('No email provided');
     return res.status(400).json({ error: 'Email is required' });
   }
   try {
+    console.log('Querying database for email:', email);
     const [results] = await db.query(
       'SELECT public_key FROM users WHERE email = ?',
       [email]
     );
-    if (results.length === 0) return res.status(404).json({ error: 'User not found' });
+    console.log('Database results:', results);
+    if (results.length === 0) {
+      console.log('No user found for email:', email);
+      return res.status(404).json({ error: 'User not found' });
+    }
+    console.log('Found user with public key:', results[0].public_key);
     res.json({ wallet_address: results[0].public_key });
   } catch (error) {
+    console.error('Database error:', error);
     res.status(500).json({ error: 'Database error' });
   }
 });
@@ -57,7 +72,6 @@ router.get('/balance', async (req, res) => {
     res.status(500).json({ error: 'Server error' });
   }
 });
-
 
 // GET lookbookIDs for public_key
 router.get('/lookbookIDs', async (req, res) => {

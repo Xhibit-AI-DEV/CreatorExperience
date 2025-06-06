@@ -155,6 +155,15 @@ const CreatorDashboard = () => {
   const [error, setError] = useState(null);
   const navigate = useNavigate();
 
+  const convertXBTtoUSD = (xbtBalance) => {
+    // Convert XBT to cents (1 XBT = 1 cent)
+    const cents = xbtBalance;
+    // Convert cents to dollars
+    const dollars = cents / 100;
+    // Format to 2 decimal places
+    return dollars.toFixed(2);
+  };
+
   useEffect(() => {
     const fetchBalance = async () => {
       const walletAddress = localStorage.getItem("walletAddress");
@@ -167,7 +176,9 @@ const CreatorDashboard = () => {
         const response = await axios.get(`${API_BASE_URL}${API_ENDPOINTS.AUTH.GET_BALANCE}`, {
           params: { publicKey: walletAddress }
         });
-        setBalance(response.data.balance || "0.00");
+        // Convert XBT balance to USD
+        const usdBalance = convertXBTtoUSD(response.data.balance || 0);
+        setBalance(usdBalance);
       } catch (error) {
         console.error("Error fetching balance:", error);
         setError("Failed to fetch balance");
@@ -193,9 +204,9 @@ const CreatorDashboard = () => {
         <XhibitLogo src="/XhibitLogo.jpg" alt="Xhibit Logo" />
         <WalletDisplayContainer>
           <WalletInfoTitle>WALLET</WalletInfoTitle>
-          <ConversionExplanation>10 XBT = 10 CENTS</ConversionExplanation>
+          <ConversionExplanation>1 XBT = 1 CENT</ConversionExplanation>
           <ConversionExplanation>CURRENT BALANCE </ConversionExplanation>
-          <WalletBalance>{isLoading ? "Loading..." : `${balance} USD`}</WalletBalance>
+          <WalletBalance>{isLoading ? "Loading..." : `$${balance} USD`}</WalletBalance>
           <PayoutButton onClick={handlePayout}>REQUEST PAYOUT</PayoutButton>
         </WalletDisplayContainer>
       </WalletInfo>
