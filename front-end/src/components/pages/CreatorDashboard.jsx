@@ -21,7 +21,7 @@ const DashboardForm = styled.form`
   flex-direction: column;
   align-items: center;
   justify-content: flex-start;
-  background: linear-gradient(to bottom, #e2dedc,rgba(9, 3, 0, 0.41));
+  background: linear-gradient(to bottom, #e2dedc, rgba(9, 3, 0, 0.41));
   backdrop-filter: blur(5px);
   position: relative;
   overflow: visible;
@@ -44,7 +44,7 @@ const WalletInfo = styled.div`
   align-items: row;
   justify-content: flex-start;
   margin-bottom: 1rem;
-  background-color: rgba(255, 254, 253, 0.88);
+  background-color: rgba(255, 254, 253, 0.47);
   width: 100%;
   border-radius: 6px;
   padding: 1.6rem;
@@ -62,6 +62,7 @@ const WalletInfoTitle = styled.h1`
   font-size: 1.1rem;
   font-weight: 800;
   margin: 0rem 0 0 1rem;
+  letter-spacing: 0.05rem;
 `;
 const ConversionExplanation = styled.p`
   font-size: 0.8rem;
@@ -96,8 +97,9 @@ const XhibitLogo = styled.img`
 `;
 
 const PayoutButton = styled.button`
-  padding: ${props => props.size === "large" ? "1rem 2.5rem" : "0.8rem 1.5rem"};
-  font-size: ${props => props.size === "large" ? "0.9rem" : "0.7rem"};
+  padding: ${(props) =>
+    props.size === "large" ? "1rem 2.5rem" : "0.8rem 1.5rem"};
+  font-size: ${(props) => (props.size === "large" ? "0.9rem" : "0.7rem")};
   border: none;
   border-radius: 3px;
   margin-top: 1rem;
@@ -107,9 +109,11 @@ const PayoutButton = styled.button`
   width: 200px;
   height: 35px;
   transition: all 0.3s ease;
-  background: ${props => props.variant === "secondary" ? "transparent" : "#000"};
-  color: ${props => props.variant === "secondary" ? "#000" : "#fff"};
-  border: ${props => props.variant === "secondary" ? "2px solid #000" : "none"};
+  background: ${(props) =>
+    props.variant === "secondary" ? "transparent" : "#000"};
+  color: ${(props) => (props.variant === "secondary" ? "#000" : "#fff")};
+  border: ${(props) =>
+    props.variant === "secondary" ? "2px solid #000" : "none"};
 
   &:hover {
     transform: translateY(-2px);
@@ -135,16 +139,54 @@ const LookBooksTitle = styled.h1`
   align-self: center;
 `;
 
-const LookBookContainer = styled.div`
+const LookBookDisplayContainer = styled.div`
   display: flex;
-  flex-direction: column;
-  align-items: column;
-  justify-content: center;
-  background-color: rgba(255, 254, 253, 0.88);
+  flex-direction: row;
+  align-items: row;
+  justify-content: flex-start;
+  margin-bottom: 1rem;
+  background-color: rgba(255, 254, 253, 0.47);
   width: 100%;
   border-radius: 6px;
   padding: 1.6rem;
-  margin-top: 1.7rem;
+  margin-top: 2rem;
+  font-family: "Helvetica Neue", helvetica;
+  color: rgba(30, 23, 9, 1);
+`;
+
+const LookbookCover = styled.img`
+  width: 140px;
+  height: 165px;
+  object-fit: cover;
+  border-radius: 4px;
+  box-shadow: 0px 5px 5px rgba(0, 0, 0, 0.62);
+
+  @media (max-width: 768px) {
+    width: 140px;
+    height: 165px;
+  }
+`;
+const LookbookTitle = styled.h1`
+  font-size: 1.1rem;
+  font-weight: 600;
+  margin-left: 1rem;
+  font-family: "Helvetica Neue", helvetica;
+  color: rgba(30, 23, 9, 1);
+  letter-spacing: 0.05rem;
+`;
+
+const LookbookStats = styled.div`
+  display: flex;
+  flex-direction: column;
+  align-items: column;
+  justify-content: flex-end;
+  margin-left: 1rem;
+`;
+
+const LookbookEarnings = styled.p`
+  font-size: 0.8rem;
+  font-weight: 400;
+  margin-left: 1rem;
   font-family: "Helvetica Neue", helvetica;
   color: rgba(30, 23, 9, 1);
 `;
@@ -173,9 +215,12 @@ const CreatorDashboard = () => {
       }
 
       try {
-        const response = await axios.get(`${API_BASE_URL}${API_ENDPOINTS.AUTH.GET_BALANCE}`, {
-          params: { publicKey: walletAddress }
-        });
+        const response = await axios.get(
+          `${API_BASE_URL}${API_ENDPOINTS.AUTH.GET_BALANCE}`,
+          {
+            params: { publicKey: walletAddress },
+          }
+        );
         // Convert XBT balance to USD
         const usdBalance = convertXBTtoUSD(response.data.balance || 0);
         setBalance(usdBalance);
@@ -206,12 +251,21 @@ const CreatorDashboard = () => {
           <WalletInfoTitle>WALLET</WalletInfoTitle>
           <ConversionExplanation>1 XBT = 1 CENT</ConversionExplanation>
           <ConversionExplanation>CURRENT BALANCE </ConversionExplanation>
-          <WalletBalance>{isLoading ? "Loading..." : `$${balance} USD`}</WalletBalance>
+          <WalletBalance>
+            {isLoading ? "Loading..." : `$${balance} USD`}
+          </WalletBalance>
           <PayoutButton onClick={handlePayout}>REQUEST PAYOUT</PayoutButton>
         </WalletDisplayContainer>
       </WalletInfo>
       <LookBooksTitle>LOOKBOOKS</LookBooksTitle>
-      <LookBookContainer></LookBookContainer>
+      <LookBookDisplayContainer>
+        <LookbookCover src="/lookbookCover.png" alt="Lookbook Cover" />
+        <LookbookTitle>LOOKBOOK TITLE</LookbookTitle>
+        <LookbookStats>
+          <LookbookEarnings>EARNINGS: $100</LookbookEarnings>
+          <LookbookEarnings>VIEWS: 100</LookbookEarnings>
+        </LookbookStats>
+      </LookBookDisplayContainer>
     </DashboardForm>
   );
 };
