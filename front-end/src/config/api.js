@@ -6,6 +6,7 @@ export const API_ENDPOINTS = {
     GET_PUBLIC_KEY: '/api/auth/public-key',
     GET_BALANCE: '/api/auth/balance',
     GET_LOOKBOOKS: '/api/auth/lookbookIDs',
+    GET_LOOKBOOK_DETAILS: '/api/auth/lookbooks/:wallet',
     GET_WALLET: '/api/auth/user/wallet'
   }
 };

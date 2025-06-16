@@ -88,7 +88,7 @@ router.get("/lookbooks", async (req, res) => {
 });
 
 // GET fetch all lookbook IDs for a wallet address
-router.get("/lookbooks/:wallet", async (req, res) => {
+router.get("/api/auth/lookbooks/:wallet", async (req, res) => {
   try {
     const { wallet } = req.params;
     const [rows] = await db.query(

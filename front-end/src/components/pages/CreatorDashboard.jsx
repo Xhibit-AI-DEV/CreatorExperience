@@ -1,10 +1,12 @@
 import React, { useState, useEffect } from "react";
 import styled from "styled-components";
-import Button from "../common/Button";
 import { useNavigate } from "react-router-dom";
 import Title from "../common/Title";
 import axios from "axios";
 import { API_BASE_URL, API_ENDPOINTS } from "../../config/api";
+import { useAuth } from "../../context/AuthContext";
+import axiosInstance from "../../utils/axios";
+
 
 const DashboardForm = styled.form`
   max-width: 400px;
@@ -142,7 +144,7 @@ const LookBooksTitle = styled.h1`
 const LookBookDisplayContainer = styled.div`
   display: flex;
   flex-direction: row;
-  align-items: row;
+  align-items: flex-start;
   justify-content: flex-start;
   margin-bottom: 1rem;
   background-color: rgba(255, 254, 253, 0.47);
@@ -166,10 +168,18 @@ const LookbookCover = styled.img`
     height: 165px;
   }
 `;
-const LookbookTitle = styled.h1`
-  font-size: 1.1rem;
-  font-weight: 600;
+
+const LookbookInfo = styled.div`
+  display: flex;
+  flex-direction: column;
   margin-left: 1rem;
+  margin-top: 0.5rem;
+`;
+
+const LookbookTitle = styled.h1`
+  font-size: 1.2rem;
+  font-weight: 600;
+  margin: 0 0 0.2rem 0;
   font-family: "Helvetica Neue", helvetica;
   color: rgba(30, 23, 9, 1);
   letter-spacing: 0.05rem;
@@ -178,17 +188,62 @@ const LookbookTitle = styled.h1`
 const LookbookStats = styled.div`
   display: flex;
   flex-direction: column;
-  align-items: column;
-  justify-content: flex-end;
-  margin-left: 1rem;
+  gap: 0.3rem;
+  margin-top: 0.5rem;
+  padding: 0.5rem;
+  border-radius: 6px;
 `;
 
 const LookbookEarnings = styled.p`
-  font-size: 0.8rem;
+  font-size: 0.9rem;
   font-weight: 400;
-  margin-left: 1rem;
+  margin: 0;
   font-family: "Helvetica Neue", helvetica;
   color: rgba(30, 23, 9, 1);
+`;
+
+const ViewButton = styled.button`
+  font-size: ${(props) => (props.size === "large" ? "1rem" : "0.9rem")};
+  border: none;
+  margin-top: 3.3rem;
+  margin-left: 7rem;
+  cursor: pointer;
+  font-weight: 500;
+  background: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+
+  &:hover {
+    text-decoration: underline;
+  }
+
+  @media (max-width: 768px) {
+    margin-left: 6.5rem;
+    margin-top: 3.3rem;
+    font-size: 1rem;
+  }
+`;
+
+const ArrowIcon = styled.img`
+  width: 16px;
+  height: 16px;
+  margin-left: 0.1rem;
+`;
+
+const LoadingText = styled.p`
+  text-align: center;
+  color: #666;
+  font-size: 1rem;
+  margin: 2rem 0;
+`;
+
+const NoLookbooksText = styled.p`
+  text-align: center;
+  color: #666;
+  font-size: 1rem;
+  margin: 2rem 0;
 `;
 
 const CreatorDashboard = () => {
@@ -196,6 +251,9 @@ const CreatorDashboard = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
   const navigate = useNavigate();
+  const { user } = useAuth();
+  console.log("CreatorDashboard - Current user:", user);
+  const [lookbooks, setLookbooks] = useState([]);
 
   const convertXBTtoUSD = (xbtBalance) => {
     // Convert XBT to cents (1 XBT = 1 cent)
@@ -235,6 +293,34 @@ const CreatorDashboard = () => {
     fetchBalance();
   }, [navigate]);
 
+  useEffect(() => {
+    const fetchLookbooks = async () => {
+      try {
+        console.log("CreatorDashboard - Fetching lookbooks for wallet:", user?.wallet);
+        if (!user?.wallet) {
+          console.log("CreatorDashboard - No wallet found, returning early");
+          return;
+        }
+        
+        const response = await axiosInstance.get(`${API_BASE_URL}${API_ENDPOINTS.AUTH.GET_LOOKBOOK_IDS}`,
+          {
+            params: { wallet: user.wallet },
+          });
+        console.log("CreatorDashboard - API Response:", response.data);
+        
+        if (response.data.success) {
+          setLookbooks(response.data.lookbookIds);
+        }
+      } catch (error) {
+        console.error("CreatorDashboard - Error:", error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchLookbooks();
+  }, [user?.wallet]);
+
   const handlePayout = async () => {
     // TODO: Implement payout functionality
     console.log("Payout requested");
@@ -259,12 +345,27 @@ const CreatorDashboard = () => {
       </WalletInfo>
       <LookBooksTitle>LOOKBOOKS</LookBooksTitle>
       <LookBookDisplayContainer>
-        <LookbookCover src="/lookbookCover.png" alt="Lookbook Cover" />
-        <LookbookTitle>LOOKBOOK TITLE</LookbookTitle>
-        <LookbookStats>
-          <LookbookEarnings>EARNINGS: $100</LookbookEarnings>
-          <LookbookEarnings>VIEWS: 100</LookbookEarnings>
-        </LookbookStats>
+        {isLoading ? (
+          <LoadingText>Loading lookbooks...</LoadingText>
+        ) : lookbooks.length === 0 ? (
+          <NoLookbooksText>No lookbooks found</NoLookbooksText>
+        ) : (
+          lookbooks.map((lookbookId) => (
+            <LookBookDisplayContainer key={lookbookId}>
+              <LookbookCover src="/lookbookCover.png" alt="Lookbook Cover" />
+              <LookbookInfo>
+                <LookbookTitle>Lookbook #{lookbookId}</LookbookTitle>
+                <LookbookStats>
+                  <LookbookEarnings>EARNINGS: $100</LookbookEarnings>
+                </LookbookStats>
+                <ViewButton>
+                  VIEW IN APP
+                  <ArrowIcon src="/arrowIcon.png" alt="Arrow" />
+                </ViewButton>
+              </LookbookInfo>
+            </LookBookDisplayContainer>
+          ))
+        )}
       </LookBookDisplayContainer>
     </DashboardForm>
   );
