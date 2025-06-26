@@ -302,14 +302,13 @@ const CreatorDashboard = () => {
           return;
         }
         
-        const response = await axiosInstance.get(`${API_BASE_URL}${API_ENDPOINTS.AUTH.GET_LOOKBOOK_IDS}`,
-          {
-            params: { wallet: user.wallet },
-          });
+        const response = await axiosInstance.get(API_ENDPOINTS.AUTH.GET_LOOKBOOKS, {
+          params: { publicKey: user.wallet },
+        });
         console.log("CreatorDashboard - API Response:", response.data);
         
-        if (response.data.success) {
-          setLookbooks(response.data.lookbookIds);
+        if (response.data.lookbookIDs) {
+          setLookbooks(response.data.lookbookIDs);
         }
       } catch (error) {
         console.error("CreatorDashboard - Error:", error);
