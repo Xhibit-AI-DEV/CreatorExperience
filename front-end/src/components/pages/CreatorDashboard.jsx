@@ -302,13 +302,12 @@ const CreatorDashboard = () => {
           return;
         }
         
-        const response = await axiosInstance.get(API_ENDPOINTS.AUTH.GET_LOOKBOOKS, {
-          params: { publicKey: user.wallet },
-        });
+        const response = await axiosInstance.get(`/api/lookbook/wallet/${user.wallet}`);
+        const lookbooks = response.data.lookbooks;
         console.log("CreatorDashboard - API Response:", response.data);
         
-        if (response.data.lookbookIDs) {
-          setLookbooks(response.data.lookbookIDs);
+        if (lookbooks) {
+          setLookbooks(lookbooks);
         }
       } catch (error) {
         console.error("CreatorDashboard - Error:", error);
@@ -343,29 +342,29 @@ const CreatorDashboard = () => {
         </WalletDisplayContainer>
       </WalletInfo>
       <LookBooksTitle>LOOKBOOKS</LookBooksTitle>
-      <LookBookDisplayContainer>
-        {isLoading ? (
-          <LoadingText>Loading lookbooks...</LoadingText>
-        ) : lookbooks.length === 0 ? (
-          <NoLookbooksText>No lookbooks found</NoLookbooksText>
-        ) : (
-          lookbooks.map((lookbookId) => (
-            <LookBookDisplayContainer key={lookbookId}>
-              <LookbookCover src="/lookbookCover.png" alt="Lookbook Cover" />
-              <LookbookInfo>
-                <LookbookTitle>Lookbook #{lookbookId}</LookbookTitle>
-                <LookbookStats>
-                  <LookbookEarnings>EARNINGS: $100</LookbookEarnings>
-                </LookbookStats>
-                <ViewButton>
-                  VIEW IN APP
-                  <ArrowIcon src="/arrowIcon.png" alt="Arrow" />
-                </ViewButton>
-              </LookbookInfo>
-            </LookBookDisplayContainer>
-          ))
-        )}
-      </LookBookDisplayContainer>
+      
+      {isLoading ? (
+        <LoadingText>Loading lookbooks...</LoadingText>
+      ) : lookbooks.length === 0 ? (
+        <NoLookbooksText>No lookbooks found</NoLookbooksText>
+      ) : (
+        lookbooks.map((lookbook) => (
+          <LookBookDisplayContainer key={lookbook.id}>
+            <LookbookCover src={lookbook.coverImage || "/lookbookCover.png"} alt="Lookbook Cover" />
+            <LookbookInfo>
+              <LookbookTitle>{lookbook.title || `Lookbook #${lookbook.id}`}</LookbookTitle>
+              <LookbookStats>
+                <LookbookEarnings>EARNINGS: ${lookbook.earnings || 0}</LookbookEarnings>
+                <LookbookEarnings>STATUS: {lookbook.status || 'Unknown'}</LookbookEarnings>
+              </LookbookStats>
+              <ViewButton>
+                VIEW IN APP
+                <ArrowIcon src="/arrowIcon.png" alt="Arrow" />
+              </ViewButton>
+            </LookbookInfo>
+          </LookBookDisplayContainer>
+        ))
+      )}
     </DashboardForm>
   );
 };
