@@ -87,25 +87,40 @@ router.get("/lookbooks", async (req, res) => {
   }
 });
 
-// GET fetch all lookbook IDs for a wallet address
-router.get("/lookbooks/:wallet", async (req, res) => {
+// GET single lookbook details
+
+router.get("/lookbooks/:id", async (req, res) => {
+  try {
+    const { id } = req.params;
+    const [rows] = await db.query("SELECT * FROM lookbooks WHERE id = ?", [id]);
+    res.json({ success: true, lookbook: rows[0] });
+  } catch (error) {
+    console.error("❌ Error fetching lookbook details:", error.message);
+    res.status(500).json({
+      success: false,
+      message: "Failed to fetch lookbook details",
+      error: error.message,
+    });
+  }
+});
+
+// GET fetch all lookbooks for a wallet address - Return full data
+router.get("/wallet/:wallet", async (req, res) => {
   try {
     const { wallet } = req.params;
     const [rows] = await db.query(
-      "SELECT id FROM lookbooks WHERE user_wallet = ?",
+      "SELECT * FROM lookbooks WHERE user_wallet = ?",
       [wallet]
     );
-    // Map the rows to an array of IDs
-    const lookbookIds = rows.map(row => row.id);
     res.json({
       success: true,
-      lookbookIds,
+      lookbooks: rows, // Return full lookbook objects, not just IDs
     });
   } catch (error) {
-    console.error("❌ Error fetching lookbook IDs:", error.message);
+    console.error("❌ Error fetching lookbooks:", error.message);
     res.status(500).json({
       success: false,
-      message: "Failed to fetch lookbook IDs",
+      message: "Failed to fetch lookbooks",
       error: error.message,
     });
   }

@@ -5,6 +5,7 @@ import { useNavigate } from "react-router-dom";
 import Title from "../common/Title";
 import axios from 'axios';
 import { API_BASE_URL, API_ENDPOINTS } from '../../config/api';
+import { useAuth } from "../../context/AuthContext";
 
 const LoginForm = styled.form`
 max-height: 1000px;
@@ -159,6 +160,7 @@ const Login = () => {
   const [showAlert, setShowAlert] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
+  const { login } = useAuth();
 
   const toggleCheckbox = () => {
     setIsChecked((prev) => !prev);
@@ -176,23 +178,28 @@ const Login = () => {
     setError(null);
 
     try {
-      // Check if user exists and get their wallet
+      console.log("Login - Making API call for email:", email);
       const response = await axios.get(`${API_BASE_URL}${API_ENDPOINTS.AUTH.GET_PUBLIC_KEY}`, {
         params: { email }
       });
       
+      console.log("Login - API Response:", response.data);
+      
       if (response.data.wallet_address) {
-        // Store the wallet address and email
+        // Store in localStorage
         localStorage.setItem('walletAddress', response.data.wallet_address);
         localStorage.setItem('userEmail', email);
         
-        console.log("User logged in successfully");
+        // Update AuthContext
+        login({ wallet: response.data.wallet_address, email });
+        
+        console.log("Login - User data set, navigating to creator");
         navigate('/creator');
       } else {
         setError("Login failed. Please try again.");
       }
     } catch (error) {
-      console.error("Login error:", error);
+      console.error("Login - Error:", error);
       if (error.response?.status === 404) {
         setError("User not found. Please sign up first.");
       } else {
