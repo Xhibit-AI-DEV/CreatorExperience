@@ -355,7 +355,6 @@ const CreatorDashboard = () => {
               <LookbookTitle>{lookbook.title || `Lookbook #${lookbook.id}`}</LookbookTitle>
               <LookbookStats>
                 <LookbookEarnings>EARNINGS: ${lookbook.earnings || 0}</LookbookEarnings>
-                <LookbookEarnings>STATUS: {lookbook.status || 'Unknown'}</LookbookEarnings>
               </LookbookStats>
               <ViewButton>
                 VIEW IN APP
