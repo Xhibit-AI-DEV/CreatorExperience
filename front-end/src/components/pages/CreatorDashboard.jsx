@@ -320,7 +320,7 @@ const CreatorDashboard = () => {
   }, [user?.wallet]);
 
   const handlePayout = async () => {
-    // TODO: Implement payout functionality
+   
     console.log("Payout requested");
   };
 
