@@ -10,7 +10,7 @@ import axiosInstance from "../../utils/axios";
 
 const DashboardForm = styled.form`
   max-width: 400px;
-  height: 700px;
+  height: 100%;
   margin: 0 auto;
   padding-left: 3rem;
   padding-right: 3rem;
