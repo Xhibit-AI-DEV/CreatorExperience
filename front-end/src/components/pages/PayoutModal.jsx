@@ -20,16 +20,15 @@ const ModalContent = styled.div`
   border-radius: 8px;
   width: 90%;
   max-width: 400px;
-  display: flex;
-  flex-direction: column;
-  gap: 1rem;
 `;
 
 const Input = styled.input`
+  width: 100%;
   padding: 0.8rem;
   border: 1px solid #ccc;
   border-radius: 4px;
   font-size: 1rem;
+  margin: 1rem 0;
 `;
 
 const Button = styled.button`
@@ -38,7 +37,7 @@ const Button = styled.button`
   border-radius: 4px;
   font-size: 1rem;
   cursor: pointer;
-  font-weight: 500;
+  margin: 0.5rem;
   
   &.primary {
     background: #000;
@@ -49,74 +48,27 @@ const Button = styled.button`
     background: #f0f0f0;
     color: #333;
   }
-  
-  &:disabled {
-    background: #ccc;
-    cursor: not-allowed;
-  }
 `;
 
-const PayoutModal = ({ isOpen, onClose, balance }) => {
+const PayoutModal = ({ balance, onClose }) => {
   const [payoutAmount, setPayoutAmount] = useState("");
-  const [isProcessingPayout, setIsProcessingPayout] = useState(false);
-  const [error, setError] = useState(null);
 
-  const handleSubmit = async (e) => {
+  console.log("PayoutModal rendering, balance:", balance);
+
+  const handleSubmit = (e) => {
     e.preventDefault();
-    
-    if (!payoutAmount || parseFloat(payoutAmount) <= 0) {
-      setError("Please enter a valid amount");
-      return;
-    }
-
-    if (parseFloat(payoutAmount) > parseFloat(balance)) {
-      setError("Amount exceeds available balance");
-      return;
-    }
-
-    setIsProcessingPayout(true);
-    setError(null);
-
-    try {
-      // Simulate processing time
-      await new Promise(resolve => setTimeout(resolve, 2000));
-      
-      console.log("Payout requested for:", payoutAmount);
-      alert(`Payout request submitted for $${payoutAmount}! This is a demo - no actual payout will be processed.`);
-      
-      // Close modal after successful submission
-      handleClose();
-      
-    } catch (error) {
-      console.error("Payout error:", error);
-      setError("Failed to process payout. Please try again.");
-    } finally {
-      setIsProcessingPayout(false);
-    }
+    console.log("Form submitted!");
+    alert(`Payout request submitted for $${payoutAmount}!`);
   };
 
   const handleClose = () => {
-    setPayoutAmount("");
-    setError(null);
-    setIsProcessingPayout(false);
+    console.log("Close function called!");
     onClose();
   };
 
-  const handleModalClick = (e) => {
-    e.stopPropagation();
-  };
-
-  const handleOverlayClick = () => {
-    if (!isProcessingPayout) {
-      handleClose();
-    }
-  };
-
-  if (!isOpen) return null;
-
   return (
-    <ModalOverlay onClick={handleOverlayClick}>
-      <ModalContent onClick={handleModalClick}>
+    <ModalOverlay>
+      <ModalContent>
         <h2>Request Payout</h2>
         <p>Enter the amount you'd like to withdraw:</p>
         
@@ -130,26 +82,29 @@ const PayoutModal = ({ isOpen, onClose, balance }) => {
             min="0"
             max={balance}
             required
-            disabled={isProcessingPayout}
           />
           
-          {error && <p style={{ color: 'red', fontSize: '0.9rem' }}>{error}</p>}
-          
-          <div style={{ display: 'flex', gap: '1rem', marginTop: '1rem' }}>
+          <div>
+            <Button type="submit" className="primary">
+              Submit Payout Request
+            </Button>
             <Button 
               type="button" 
               className="secondary" 
               onClick={handleClose}
-              disabled={isProcessingPayout}
             >
-              Cancel
+              Close Modal
             </Button>
+            
+            {/* Add test button */}
             <Button 
-              type="submit" 
-              className="primary"
-              disabled={isProcessingPayout}
+              type="button" 
+              onClick={() => {
+                console.log("Test button in modal clicked!");
+                alert("Modal test button works!");
+              }}
             >
-              {isProcessingPayout ? "Processing..." : "Submit Payout Request"}
+              Test Button
             </Button>
           </div>
         </form>

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback, useMemo, useRef } from "react";
 import styled from "styled-components";
 import { useNavigate } from "react-router-dom";
 import Title from "../common/Title";
@@ -99,9 +99,8 @@ const XhibitLogo = styled.img`
 `;
 
 const PayoutButton = styled.button`
-  padding: ${(props) =>
-    props.size === "large" ? "1rem 2.5rem" : "0.8rem 1.5rem"};
-  font-size: ${(props) => (props.size === "large" ? "0.9rem" : "0.7rem")};
+  padding: 0.8rem 1.5rem;
+  font-size: 0.7rem;
   border: none;
   border-radius: 3px;
   margin-top: 1rem;
@@ -110,12 +109,9 @@ const PayoutButton = styled.button`
   font-weight: 400;
   width: 200px;
   height: 35px;
+  background: #000;
+  color: #fff;
   transition: all 0.3s ease;
-  background: ${(props) =>
-    props.variant === "secondary" ? "transparent" : "#000"};
-  color: ${(props) => (props.variant === "secondary" ? "#000" : "#fff")};
-  border: ${(props) =>
-    props.variant === "secondary" ? "2px solid #000" : "none"};
 
   &:hover {
     transform: translateY(-2px);
@@ -246,22 +242,26 @@ const NoLookbooksText = styled.p`
   margin: 2rem 0;
 `;
 
-const CreatorDashboard = () => {
+const CreatorDashboard = React.memo(() => {
   const [balance, setBalance] = useState("0.00");
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [showPayoutModal, setShowPayoutModal] = useState(false);
-  const navigate = useNavigate();
-  const { user } = useAuth();
-  console.log("CreatorDashboard - Current user:", user);
+  const modalRef = useRef(null);
+  const [showModal, setShowModal] = useState(() => {
+    return localStorage.getItem('showPayoutModal') === 'true';
+  });
   const [lookbooks, setLookbooks] = useState([]);
+  const [lookbooksLoaded, setLookbooksLoaded] = useState(false);
+  const navigate = useNavigate();
+  const { user, isInitialized } = useAuth();
+
+  useEffect(() => {
+    localStorage.setItem('showPayoutModal', showModal.toString());
+  }, [showModal]);
 
   const convertXBTtoUSD = (xbtBalance) => {
-    // Convert XBT to cents (1 XBT = 1 cent)
     const cents = xbtBalance;
-    // Convert cents to dollars
     const dollars = cents / 100;
-    // Format to 2 decimal places
     return dollars.toFixed(2);
   };
 
@@ -280,7 +280,6 @@ const CreatorDashboard = () => {
             params: { publicKey: walletAddress },
           }
         );
-        // Convert XBT balance to USD
         const usdBalance = convertXBTtoUSD(response.data.balance || 0);
         setBalance(usdBalance);
       } catch (error) {
@@ -295,38 +294,67 @@ const CreatorDashboard = () => {
   }, [navigate]);
 
   useEffect(() => {
+    if (!isInitialized || !user?.wallet || lookbooksLoaded) {
+      return;
+    }
+
     const fetchLookbooks = async () => {
       try {
-        console.log("CreatorDashboard - Fetching lookbooks for wallet:", user?.wallet);
-        if (!user?.wallet) {
-          console.log("CreatorDashboard - No wallet found, returning early");
-          return;
-        }
-        
         const response = await axiosInstance.get(`/api/lookbook/wallet/${user.wallet}`);
         const lookbooks = response.data.lookbooks;
-        console.log("CreatorDashboard - API Response:", response.data);
         
         if (lookbooks) {
           setLookbooks(lookbooks);
+          setLookbooksLoaded(true);
         }
       } catch (error) {
         console.error("CreatorDashboard - Error:", error);
-      } finally {
-        setIsLoading(false);
       }
     };
 
     fetchLookbooks();
-  }, [user?.wallet]);
+  }, [user?.wallet, isInitialized, lookbooksLoaded]);
 
-  const handlePayout = () => {
-    setShowPayoutModal(true);
-  };
+  const handlePayout = useCallback(() => {
+    if (modalRef.current) {
+      modalRef.current.style.display = 'block';
+    }
+    setShowModal(true);
+  }, []);
 
-  const handleClosePayoutModal = () => {
-    setShowPayoutModal(false);
-  };
+  const handleCloseModal = useCallback(() => {
+    if (modalRef.current) {
+      modalRef.current.style.display = 'none';
+    }
+    setShowModal(false);
+  }, []);
+
+  const lookbooksContent = useMemo(() => {
+    if (isLoading) {
+      return <LoadingText>Loading lookbooks...</LoadingText>;
+    }
+    
+    if (lookbooks.length === 0) {
+      return <NoLookbooksText>No lookbooks found</NoLookbooksText>;
+    }
+    
+    return lookbooks.map((lookbook) => (
+      <LookBookDisplayContainer key={lookbook.id}>
+        <LookbookCover src={lookbook.coverImage || "/lookbookCover.png"} alt="Lookbook Cover" />
+        <LookbookInfo>
+          <LookbookTitle>{lookbook.title || `Lookbook #${lookbook.id}`}</LookbookTitle>
+          <LookbookStats>
+            <LookbookEarnings>EARNINGS: ${lookbook.earnings || 0}</LookbookEarnings>
+          </LookbookStats>
+          <ViewButton>
+            VIEW IN APP
+            <ArrowIcon src="/arrowIcon.png" alt="Arrow" />
+          </ViewButton>
+        </LookbookInfo>
+      </LookBookDisplayContainer>
+    ));
+  }, [lookbooks, isLoading]);
+
 
   return (
     <>
@@ -343,42 +371,27 @@ const CreatorDashboard = () => {
             <WalletBalance>
               {isLoading ? "Loading..." : `$${balance} USD`}
             </WalletBalance>
-            <PayoutButton onClick={handlePayout}>REQUEST PAYOUT</PayoutButton>
+            <PayoutButton onClick={handlePayout}>
+              REQUEST PAYOUT
+            </PayoutButton>
           </WalletDisplayContainer>
         </WalletInfo>
         <LookBooksTitle>LOOKBOOKS</LookBooksTitle>
-        
-        {isLoading ? (
-          <LoadingText>Loading lookbooks...</LoadingText>
-        ) : lookbooks.length === 0 ? (
-          <NoLookbooksText>No lookbooks found</NoLookbooksText>
-        ) : (
-          lookbooks.map((lookbook) => (
-            <LookBookDisplayContainer key={lookbook.id}>
-              <LookbookCover src={lookbook.coverImage || "/lookbookCover.png"} alt="Lookbook Cover" />
-              <LookbookInfo>
-                <LookbookTitle>{lookbook.title || `Lookbook #${lookbook.id}`}</LookbookTitle>
-                <LookbookStats>
-                  <LookbookEarnings>EARNINGS: ${lookbook.earnings || 0}</LookbookEarnings>
-                </LookbookStats>
-                <ViewButton>
-                  VIEW IN APP
-                  <ArrowIcon src="/arrowIcon.png" alt="Arrow" />
-                </ViewButton>
-              </LookbookInfo>
-            </LookBookDisplayContainer>
-          ))
-        )}
+        {lookbooksContent}
       </DashboardForm>
 
-      {/* Separate PayoutModal Component */}
-      <PayoutModal 
-        isOpen={showPayoutModal}
-        onClose={handleClosePayoutModal}
-        balance={balance}
-      />
+      <div ref={modalRef} style={{ display: showModal ? 'block' : 'none' }}>
+        {showModal && (
+          <PayoutModal 
+            balance={balance} 
+            onClose={handleCloseModal}
+          />
+        )}
+      </div>
     </>
   );
-};
+});
+
+CreatorDashboard.displayName = 'CreatorDashboard';
 
 export default CreatorDashboard;
