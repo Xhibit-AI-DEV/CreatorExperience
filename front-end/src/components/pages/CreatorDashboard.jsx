@@ -6,7 +6,7 @@ import axios from "axios";
 import { API_BASE_URL, API_ENDPOINTS } from "../../config/api";
 import { useAuth } from "../../context/AuthContext";
 import axiosInstance from "../../utils/axios";
-
+import PayoutModal from "./PayoutModal";
 
 const DashboardForm = styled.form`
   max-width: 400px;
@@ -250,6 +250,7 @@ const CreatorDashboard = () => {
   const [balance, setBalance] = useState("0.00");
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [showPayoutModal, setShowPayoutModal] = useState(false);
   const navigate = useNavigate();
   const { user } = useAuth();
   console.log("CreatorDashboard - Current user:", user);
@@ -319,52 +320,64 @@ const CreatorDashboard = () => {
     fetchLookbooks();
   }, [user?.wallet]);
 
-  const handlePayout = async () => {
-   
-    console.log("Payout requested");
+  const handlePayout = () => {
+    setShowPayoutModal(true);
+  };
+
+  const handleClosePayoutModal = () => {
+    setShowPayoutModal(false);
   };
 
   return (
-    <DashboardForm>
-      <TitleContainer>
-        <Title>XHIBIT</Title>
-      </TitleContainer>
-      <WalletInfo>
-        <XhibitLogo src="/XhibitLogo.jpg" alt="Xhibit Logo" />
-        <WalletDisplayContainer>
-          <WalletInfoTitle>WALLET</WalletInfoTitle>
-          <ConversionExplanation>1 XBT = 1 CENT</ConversionExplanation>
-          <ConversionExplanation>CURRENT BALANCE </ConversionExplanation>
-          <WalletBalance>
-            {isLoading ? "Loading..." : `$${balance} USD`}
-          </WalletBalance>
-          <PayoutButton onClick={handlePayout}>REQUEST PAYOUT</PayoutButton>
-        </WalletDisplayContainer>
-      </WalletInfo>
-      <LookBooksTitle>LOOKBOOKS</LookBooksTitle>
-      
-      {isLoading ? (
-        <LoadingText>Loading lookbooks...</LoadingText>
-      ) : lookbooks.length === 0 ? (
-        <NoLookbooksText>No lookbooks found</NoLookbooksText>
-      ) : (
-        lookbooks.map((lookbook) => (
-          <LookBookDisplayContainer key={lookbook.id}>
-            <LookbookCover src={lookbook.coverImage || "/lookbookCover.png"} alt="Lookbook Cover" />
-            <LookbookInfo>
-              <LookbookTitle>{lookbook.title || `Lookbook #${lookbook.id}`}</LookbookTitle>
-              <LookbookStats>
-                <LookbookEarnings>EARNINGS: ${lookbook.earnings || 0}</LookbookEarnings>
-              </LookbookStats>
-              <ViewButton>
-                VIEW IN APP
-                <ArrowIcon src="/arrowIcon.png" alt="Arrow" />
-              </ViewButton>
-            </LookbookInfo>
-          </LookBookDisplayContainer>
-        ))
-      )}
-    </DashboardForm>
+    <>
+      <DashboardForm>
+        <TitleContainer>
+          <Title>XHIBIT</Title>
+        </TitleContainer>
+        <WalletInfo>
+          <XhibitLogo src="/XhibitLogo.jpg" alt="Xhibit Logo" />
+          <WalletDisplayContainer>
+            <WalletInfoTitle>WALLET</WalletInfoTitle>
+            <ConversionExplanation>1 XBT = 1 CENT</ConversionExplanation>
+            <ConversionExplanation>CURRENT BALANCE </ConversionExplanation>
+            <WalletBalance>
+              {isLoading ? "Loading..." : `$${balance} USD`}
+            </WalletBalance>
+            <PayoutButton onClick={handlePayout}>REQUEST PAYOUT</PayoutButton>
+          </WalletDisplayContainer>
+        </WalletInfo>
+        <LookBooksTitle>LOOKBOOKS</LookBooksTitle>
+        
+        {isLoading ? (
+          <LoadingText>Loading lookbooks...</LoadingText>
+        ) : lookbooks.length === 0 ? (
+          <NoLookbooksText>No lookbooks found</NoLookbooksText>
+        ) : (
+          lookbooks.map((lookbook) => (
+            <LookBookDisplayContainer key={lookbook.id}>
+              <LookbookCover src={lookbook.coverImage || "/lookbookCover.png"} alt="Lookbook Cover" />
+              <LookbookInfo>
+                <LookbookTitle>{lookbook.title || `Lookbook #${lookbook.id}`}</LookbookTitle>
+                <LookbookStats>
+                  <LookbookEarnings>EARNINGS: ${lookbook.earnings || 0}</LookbookEarnings>
+                </LookbookStats>
+                <ViewButton>
+                  VIEW IN APP
+                  <ArrowIcon src="/arrowIcon.png" alt="Arrow" />
+                </ViewButton>
+              </LookbookInfo>
+            </LookBookDisplayContainer>
+          ))
+        )}
+      </DashboardForm>
+
+      {/* Separate PayoutModal Component */}
+      <PayoutModal 
+        isOpen={showPayoutModal}
+        onClose={handleClosePayoutModal}
+        balance={balance}
+      />
+    </>
   );
 };
 
