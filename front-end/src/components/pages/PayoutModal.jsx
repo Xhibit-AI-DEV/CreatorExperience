@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import styled from "styled-components";
 import { Transak } from '@transak/transak-sdk';
 
@@ -111,6 +111,7 @@ const PayoutModal = ({ balance, onClose, userWallet }) => {
   const [payoutAmount, setPayoutAmount] = useState("");
   const [isProcessingPayout, setIsProcessingPayout] = useState(false);
   const [error, setError] = useState(null);
+  const transakRef = useRef(null);
 
   useEffect(() => {
     setPayoutAmount("");
@@ -118,36 +119,99 @@ const PayoutModal = ({ balance, onClose, userWallet }) => {
     setIsProcessingPayout(false);
   }, []);
 
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (transakRef.current) {
+        const possibleSelectors = [
+          '[data-transak-widget]',
+          '.transak-widget',
+          '[id*="transak"]',
+          '[class*="transak"]',
+          'iframe[src*="transak"]',
+          '.transak-modal',
+          '.transak-overlay'
+        ];
+
+        let isClickInsideWidget = false;
+        
+        possibleSelectors.forEach(selector => {
+          const element = document.querySelector(selector);
+          if (element && element.contains(event.target)) {
+            isClickInsideWidget = true;
+          }
+        });
+
+        if (!isClickInsideWidget) {
+          console.log('Click outside Transak widget detected');
+          closeTransakWidget();
+        }
+      }
+    };
+
+    const timeoutId = setTimeout(() => {
+      document.addEventListener('mousedown', handleClickOutside);
+    }, 1000);
+
+    return () => {
+      clearTimeout(timeoutId);
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, []);
+
   const handleSubmit = (e) => {
     e.preventDefault();
     if (payoutAmount.trim()) {
-      // Initialize Transak widget for XLM to USD off-ramp
       const transak = new Transak({
-        apiKey: process.env.REACT_APP_TRANSAK_API_KEY, // Replace with your actual API key
-        environment: 'STAGING', // Change to 'PRODUCTION' for live
+        apiKey: process.env.REACT_APP_TRANSAK_API_KEY,
+        environment: 'STAGING',
         walletAddress: userWallet,
         defaultCryptoCurrency: 'XLM',
-        cryptoCurrencyList: 'XLM',
         fiatCurrency: 'USD',
         countryCode: 'US',
         themeColor: '#007bff',
-        redirectURL: window.location.origin,
-        hideMenu: false,
-        isDisableCrypto: false,
-        isDisableFiat: true, // Only allow crypto to fiat (off-ramp)
-        exchangeScreenTitle: 'Withdraw XLM to USD',
+        redirectURL:  window.location.origin + '/creator',
+        isDisableFiat: true,
         cryptoAmount: payoutAmount,
         defaultNetwork: 'stellar',
         networks: 'stellar',
+        network: 'stellar',
+        cryptoCurrencyList: 'XLM',
+        defaultMode: 'buy',
+        mode: 'buy',
+        isDisableCrypto: false,
+        defaultCryptoAmount: payoutAmount,
+        defaultFiatAmount: '',
         defaultPaymentMethod: 'card',
         paymentMethod: 'card',
-        defaultMode: 'sell', // Set to sell mode for off-ramp
+        exchangeScreenTitle: 'Sell XLM for USD',
       });
+
+      // Store reference to close later
+      transakRef.current = transak;
 
       // Open the Transak widget
       transak.init();
     }
   };
+
+  const closeTransakWidget = () => {
+    if (transakRef.current) {
+      try {
+        transakRef.current.close();
+      } catch (error) {
+        console.warn('Error closing Transak widget:', error);
+      }
+      transakRef.current = null;
+    }
+  };
+
+  useEffect(() => {
+    return () => {
+      if (transakRef.current) {
+        closeTransakWidget();
+      }
+    };
+  }, []);
 
   const handleModalClick = (e) => {
     e.stopPropagation();
