@@ -1,0 +1,22 @@
+{
+  "name": "xhibit-token",
+  "version": "1.0.0",
+  "description": "Standalone Stellar XHIBIT token management script",
+  "main": "XhibitToken.js",
+  "scripts": {
+    "start": "node XhibitToken.js",
+    "setup": "node XhibitToken.js"
+  },
+  "dependencies": {
+    "stellar-sdk": "^11.0.0",
+    "dotenv": "^16.0.0"
+  },
+  "keywords": [
+    "stellar",
+    "blockchain",
+    "tokens",
+    "xhibit"
+  ],
+  "author": "Xhibit Team",
+  "license": "MIT"
+}
