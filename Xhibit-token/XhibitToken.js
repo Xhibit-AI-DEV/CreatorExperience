@@ -25,14 +25,13 @@ async function createStellarAccount() {
 
     // Fund the account with XLM (required for operations)
     console.log("💰 Funding account with XLM...");
-    const response = await fetch(
-      `https://horizon-testnet.stellar.org/friendbot?addr=${publicKey}`
-    );
 
-    if (response.ok) {
+    // Use the Stellar SDK's friendbot method instead of fetch
+    try {
+      await server.friendbot(publicKey).call();
       console.log("✅ Account funded with XLM!");
-    } else {
-      console.log("❌ Failed to fund account with XLM");
+    } catch (fundingError) {
+      console.log("❌ Failed to fund account with XLM:", fundingError.message);
       return null;
     }
 
@@ -43,27 +42,63 @@ async function createStellarAccount() {
   }
 }
 
+async function createIssuerAccount() {
+  try {
+    console.log("🏗️  Creating issuer account...");
+
+    // Create a new keypair for the issuer
+    const issuerKeypair = StellarSdk.Keypair.random();
+    const issuerPublic = issuerKeypair.publicKey();
+    const issuerSecret = issuerKeypair.secret();
+
+    console.log("📋 Issuer Public Key:", issuerPublic);
+    console.log("🔑 Issuer Secret Key:", issuerSecret);
+    console.log("⚠️  IMPORTANT: Save this issuer secret key securely!");
+
+    // Fund the issuer account with XLM
+    console.log("💰 Funding issuer account with XLM...");
+    await server.friendbot(issuerPublic).call();
+    console.log("✅ Issuer account funded with XLM!");
+
+    return { issuerKeypair, issuerPublic, issuerSecret };
+  } catch (error) {
+    console.error("❌ Error creating issuer account:", error);
+    return null;
+  }
+}
+
 async function createXhibitAsset() {
   try {
     console.log("🏗️  Creating XHIBIT asset...");
 
-    // Use the issuer secret from environment or create a new one
-    const issuerSecret = process.env.ISSUER_SECRET;
-    if (!issuerSecret) {
-      console.log("❌ ISSUER_SECRET not found in environment variables");
-      console.log("Please set ISSUER_SECRET in your .env file");
+    // Create a new issuer account (or use existing one if you prefer)
+    const issuerInfo = await createIssuerAccount();
+    if (!issuerInfo) {
+      console.log("❌ Failed to create issuer account");
       return null;
     }
 
-    const issuerKeypair = StellarSdk.Keypair.fromSecret(issuerSecret);
-    const issuerPublic = issuerKeypair.publicKey();
+    const { issuerKeypair, issuerPublic } = issuerInfo;
 
-    console.log("📋 Issuer Public Key:", issuerPublic);
+    // Wait a moment for the account to be funded
+    console.log("⏳ Waiting for issuer account funding to complete...");
+    await new Promise((resolve) => setTimeout(resolve, 3000));
+
+    // Load the issuer account
+    const issuerAccount = await server.loadAccount(issuerPublic);
+    const fee = await server.fetchBaseFee();
+
+    // Create the XHIBIT asset WITHOUT authorization requirements
+    // Just create the asset without setting any flags
+    console.log("✅ XHIBIT asset created successfully!");
     console.log("✅ XHIBIT asset issuer ready!");
 
     return { issuerKeypair, issuerPublic };
   } catch (error) {
-    console.error("❌ Error creating XHIBIT asset:", error);
+    console.error(
+      "❌ Error creating XHIBIT asset:",
+      error.response?.data || error.message
+    );
     return null;
   }
 }
@@ -200,18 +235,33 @@ async function main() {
   }
 
   console.log("");
-  console.log("🎉 Setup Complete!");
-  console.log("==================");
-  console.log("📋 Account Address:", account.publicKey);
+  console.log("🎉 XHIBIT Token Setup Complete!");
+  console.log("=================================");
+  console.log("📋 User Account:", account.publicKey);
   console.log("🔑 Secret Key:", account.secretKey);
-  console.log("💰 XHIBIT Balance: 100 tokens");
+  console.log("🏗️  Issuer Account:", assetInfo.issuerPublic);
+  console.log("💰 XHIBIT Tokens Received: 100");
   console.log("");
-  console.log("⚠️  IMPORTANT: Save your secret key securely!");
+  console.log("🔍 You can view your account at:");
   console.log(
-    "🔍 You can view your account at: https://laboratory.stellar.org/#account-viewer"
+    `   https://laboratory.stellar.org/#account?publicKey=${account.publicKey}`
   );
-  console.log("🌐 Testnet Explorer: https://stellar.expert/explorer/testnet");
+  console.log("");
+  console.log("⚠️  Remember to save your secret key securely!");
 }
 
 // Run the main function
-main().catch(console.error);
+if (require.main === module) {
+  main().catch((error) => {
+    console.error("❌ Unexpected error:", error);
+    process.exit(1);
+  });
+}
+
+module.exports = {
+  createStellarAccount,
+  createXhibitAsset,
+  establishTrustline,
+  transferXhibitTokens,
+  main,
+};
